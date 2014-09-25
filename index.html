@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Backbone app</title>
+	<script src="jQuery.js"></script>
+	<script src="underscore.js"></script>
+	<script src="backbone.js"></script>
+
+	<script type="text/template" id="item_template">
+		<li>
+			<span><%=title%></span>
+			<input type="checkbox" name="" value="" <%= completed ? 'checked' : '' %>>
+		</li>
+	</script>
+
+	<script src="text/template" id="stats_template">
+        <span><%=remaining%> items left</span>
+		<span><%=finished%> items completed</span>
+		<span><%=total%> total items</span>
+	</script>
+	
+</head>
+
+<body>
+
+	<div id="listApp">
+		<input id="newTodo" type="text" name="" value="" placeholder=""/>
+		<input type="button" name="" value="Add" />
+
+		<div id="todolist"></div>
+
+		<div id="statsContainer"></div>
+		
+	</div>
+
+<script src="app.js"></script>
+</body>
+
+</html>
