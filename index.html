@@ -7,10 +7,9 @@
 	<script src="backbone.js"></script>
 
 	<script type="text/template" id="item_template">
-		<li>
-			<span><%=title%></span>
-			<input type="checkbox" name="" value="" <%= completed ? 'checked' : '' %>>
-		</li>
+		<span><%=title%></span>
+		<input type="checkbox" name="" value="" <%= completed ? 'checked' : '' %>>
+		<input type="button" name="" value="Remove">
 	</script>
 
 	<script src="text/template" id="stats_template">

@@ -3,6 +3,23 @@
 /**************************************/
 (function() {
 
+	Backbone.sync = function(method, model) {
+		switch(method) {
+				case 'create':
+					var db = JSON.parse(localStorage.getItem('todos')) || {};
+					db[model.attributes.title] = model.attributes;
+					
+					localStorage.removeItem('todos');
+					localStorage.setItem('todos', JSON.stringify(db));		
+					break;
+
+				case 'read':
+					var deferred = Backbone.$.deferred();
+					deferred.resolve(JSON.parse(localStorage.getItem('todos')));
+					break;
+			};
+	};
+
 	//Create a Todo Model constructor which inherits from base Backbone.Model constructor
 	var Todo = Backbone.Model.extend({
 
@@ -45,7 +62,7 @@
 
 	//Create a View constructor which inherits from base Backbone.View constructor
 	var ItemView = Backbone.View.extend({
-		// tagName : 'li',
+		tagName : 'li',
 
 		//compiled template function which is associated with the view. Caches the compiled template once during constructor
 		//initialization so that you may use the compiled template many times without repeating the compilation step
@@ -56,7 +73,8 @@
 		//If you skip the element selector in [event selector], the events are delegated to the root element of the
 		//template. Use this for default event delegation.
 		events : {
-			'click input[type=checkbox]' : 'toggleCompleted'
+			'click input[type=checkbox]' : 'toggleCompleted',
+			'click input[type=button]' : 'removeItem'
 		},
 
 		//Initialize function is called by default during the construction phase
@@ -64,6 +82,7 @@
 
 			//Listen to events on other objects, in this case, the model associated with the view
 			this.listenTo(this.model, 'change', this.render);
+			this.listenTo(this.model, 'destroy', this.remove);
 
 		},
 
@@ -82,6 +101,12 @@
 
 			this.model.toggle();
 
+		},
+
+		removeItem : function() {
+
+			this.model.destroy();
+
 		}
 	});
 
@@ -97,6 +122,13 @@
 
 			this.listenTo(TodoListCollection, 'add', this.addItem);
 			this.listenTo(TodoListCollection, 'all', this.render);
+			this.listenTo(TodoListCollection, 'reset', this.addAll);
+
+			TodoListCollection.fetch({
+				success : function(data) {
+					console.log('HELLO');
+				}
+			});
 		},
 
 		//Override default render function
@@ -110,6 +142,9 @@
 					finished : completed,
 					total : remaining + completed
 				}));	
+			}
+			else {
+				this.$stats.hide();
 			}			
 			
 		},
@@ -120,16 +155,27 @@
 
 		createModel : function() {
 
-			TodoListCollection.add({
-				title : this.$input.val()
-				// completed : false
-			});
+			var inputValue = this.$input.val();
+
+			if(inputValue) {
+				TodoListCollection.create({
+					title : inputValue
+					// completed : false
+				});
+
+				this.$input.val('');
+			}
 
 		},
 
 		addItem : function(todo, Collection) {
 			var view = new ItemView({model : todo});
 			this.$list.append(view.render().el);
+		},
+
+		adAll : function() {
+			this.$list.html('');
+			TodoListCollection.each(this.addItem, this);
 		}
 	});
 
