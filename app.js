@@ -14,9 +14,17 @@
 					break;
 
 				case 'read':
-					var deferred = Backbone.$.deferred();
+					var deferred = Backbone.$.Deferred();
 					deferred.resolve(JSON.parse(localStorage.getItem('todos')));
+					return deferred.promise();
 					break;
+
+				case 'delete':
+					var db = JSON.parse(localStorage.getItem('todos'));
+					delete db[model.attributes.title];
+
+					localStorage.removeItem('todos');
+					localStorage.setItem('todos', JSON.stringify(db));
 			};
 	};
 
@@ -110,7 +118,7 @@
 		}
 	});
 
-	var AddView = Backbone.View.extend({
+	var AppView = Backbone.View.extend({
 		el : $('#listApp'),
 
 		statsTemplate : _.template( $('#stats_template').html() ),
@@ -124,10 +132,15 @@
 			this.listenTo(TodoListCollection, 'all', this.render);
 			this.listenTo(TodoListCollection, 'reset', this.addAll);
 
-			TodoListCollection.fetch({
-				success : function(data) {
-					console.log('HELLO');
+			TodoListCollection.fetch().then(function(data) {
+				var dataArr = [];
+
+				for (var i in data) {
+					if(data.hasOwnProperty(i)) {
+						dataArr.push(data[i]);
+					}
 				}
+				TodoListCollection.reset(dataArr);
 			});
 		},
 
@@ -173,13 +186,13 @@
 			this.$list.append(view.render().el);
 		},
 
-		adAll : function() {
+		addAll : function() {
 			this.$list.html('');
 			TodoListCollection.each(this.addItem, this);
 		}
 	});
 
-	var appView = new AddView();
+	var appView = new AppView();
 
 
 }())
